@@ -40,20 +40,22 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
 
       # 5. Re-apply all objects (views, functions, procedures — run on EVERY deploy)
-      #    Uses psql directly so each file is always applied with its latest version.
+      #    psql reads PG* env vars natively — no URL parsing issues.
       - name: Apply database objects (views, functions, procedures)
         run: |
-          DB_URL="postgresql://postgres:${DB_PASSWORD}@db.${PROJECT_REF}.supabase.co:5432/postgres"
           OBJECT_DIRS="supabase/objects/views supabase/objects/functions supabase/objects/procedures"
           for DIR in $OBJECT_DIRS; do
             if [ -d "$DIR" ]; then
               echo "Applying objects in $DIR..."
               for FILE in $(find "$DIR" -name "*.sql" | sort); do
                 echo "  -> $FILE"
-                psql "$DB_URL" -f "$FILE"
+                psql -f "$FILE"
               done
             fi
           done
         env:
-          PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-          DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PGHOST: db.${{ secrets.SUPABASE_PROJECT_REF }}.supabase.co
+          PGPORT: 5432
+          PGUSER: postgres
+          PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PGDATABASE: postgres
