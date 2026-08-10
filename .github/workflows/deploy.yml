@@ -5,11 +5,11 @@ on:
     branches:
       - master
     paths:
-      - 'supabase/migrations/**'
+      - 'supabase/**'
 
 jobs:
   deploy:
-    name: Run Migrations on Supabase
+    name: Deploy Database Changes
     runs-on: ubuntu-latest
 
     steps:
@@ -30,10 +30,27 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
-      # 4. Push all pending migrations to the remote database
+      # 4. Push pending migrations (tables, columns, indexes — run ONCE)
       - name: Push database migrations
         run: |
           supabase db push
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+      # 5. Re-apply all objects (views, functions, procedures — run on EVERY deploy)
+      #    Uses psql directly so each file is always applied with its latest version.
+      - name: Apply database objects (views, functions, procedures)
+        run: |
+          OBJECT_DIRS="supabase/objects/views supabase/objects/functions supabase/objects/procedures"
+          for DIR in $OBJECT_DIRS; do
+            if [ -d "$DIR" ]; then
+              echo "Applying objects in $DIR..."
+              for FILE in $(find "$DIR" -name "*.sql" | sort); do
+                echo "  -> $FILE"
+                psql "${{ secrets.SUPABASE_DB_URL }}" -f "$FILE"
+              done
+            fi
+          done
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
