@@ -48,7 +48,7 @@ jobs:
               echo "Applying objects in $DIR..."
               for FILE in $(find "$DIR" -name "*.sql" | sort); do
                 echo "  -> $FILE"
-                psql "${{ secrets.SUPABASE_DB_URL }}" -f "$FILE"
+                psql "$SUPABASE_DB_URL" -f "$FILE"
               done
             fi
           done
