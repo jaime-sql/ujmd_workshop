@@ -136,3 +136,5 @@ INSERT INTO detalle_pedido (id_pedido, id_producto, cantidad, precio_unitario_hi
     (1002, 'PROD-01', 6, 1.25),
     (1002, 'PROD-12', 2, 2.50)
     ON CONFLICT (id_pedido, id_producto) DO NOTHING;
+
+-- Migration applied successfully.
