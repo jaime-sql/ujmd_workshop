@@ -43,15 +43,17 @@ jobs:
       #    Uses psql directly so each file is always applied with its latest version.
       - name: Apply database objects (views, functions, procedures)
         run: |
+          DB_URL="postgresql://postgres:${DB_PASSWORD}@db.${PROJECT_REF}.supabase.co:5432/postgres"
           OBJECT_DIRS="supabase/objects/views supabase/objects/functions supabase/objects/procedures"
           for DIR in $OBJECT_DIRS; do
             if [ -d "$DIR" ]; then
               echo "Applying objects in $DIR..."
               for FILE in $(find "$DIR" -name "*.sql" | sort); do
                 echo "  -> $FILE"
-                psql "$SUPABASE_DB_URL" -f "$FILE"
+                psql "$DB_URL" -f "$FILE"
               done
             fi
           done
         env:
-          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
