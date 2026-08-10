@@ -24,3 +24,4 @@ GROUP BY
     pe.id_pedido, cl.nombre, cl.direccion_linea1,
     mun.nombre, dep.nombre, re.nombre,
     pe.costo_envio, pe.estado_pedido, pe.metodo_pago, pe.fecha_hora;
+-- last deploy: 2026-08-10 17:44:38
