@@ -40,9 +40,13 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
 
       # 5. Re-apply all objects (views, functions, procedures — run on EVERY deploy)
-      #    psql reads PG* env vars natively — no URL parsing issues.
+      #    psql reads PG* env vars natively. PGHOSTADDR forces IPv4 (GitHub Actions can't route IPv6).
       - name: Apply database objects (views, functions, procedures)
         run: |
+          # Force IPv4: resolve hostname to IPv4 address
+          export PGHOSTADDR=$(getent ahostsv4 "$PGHOST" | head -1 | awk '{print $1}')
+          echo "Resolved $PGHOST -> $PGHOSTADDR"
+
           OBJECT_DIRS="supabase/objects/views supabase/objects/functions supabase/objects/procedures"
           for DIR in $OBJECT_DIRS; do
             if [ -d "$DIR" ]; then
@@ -59,3 +63,4 @@ jobs:
           PGUSER: postgres
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
           PGDATABASE: postgres
+          PGSSLMODE: require
