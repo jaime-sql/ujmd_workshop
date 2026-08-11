@@ -58,7 +58,7 @@ jobs:
                 HTTP_CODE=$(echo "$RESPONSE" | tail -1)
                 BODY=$(echo "$RESPONSE" | head -1)
                 echo "    HTTP $HTTP_CODE: $BODY"
-                if [ "$HTTP_CODE" != "200" ]; then
+                if [[ "$HTTP_CODE" != 2* ]]; then
                   echo "ERROR: Failed to apply $FILE"
                   exit 1
                 fi
